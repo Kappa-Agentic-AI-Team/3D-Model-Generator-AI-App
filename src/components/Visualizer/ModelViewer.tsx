@@ -4,6 +4,8 @@ import { Button } from "@/components/shared/Button";
 import { initThreeScene } from "@/lib/three";
 import { useTheme } from "@/context/ThemeContext";
 import { Layers, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { useModelViewer } from "@/hooks/useModelViewer";
+import * as THREE from 'three';
 
 interface ModelViewerProps {
   prompt?: string;
@@ -16,6 +18,7 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ prompt, imageFile }) =
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerated, setIsGenerated] = useState(false);
   const { theme } = useTheme();
+  const {get3DImage, get3DFromImage} = useModelViewer();
 
   useEffect(() => {
     if (containerRef.current) {
@@ -47,17 +50,38 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ prompt, imageFile }) =
     }
   }, [prompt, imageFile, sceneApi]);
   
-  const generateModel = () => {
+  const generateModel = async () => {
     if (!sceneApi) return;
-    
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    setTimeout(() => {
-      sceneApi.addRoom('preset');
-      setIsLoading(false);
+    try{
+      setIsLoading(true);
+      let base64Img;
+      if(prompt && imageFile){
+        base64Img = await get3DFromImage(imageFile, prompt);
+      }else{
+        base64Img = await get3DImage(prompt);
+      }
+
+      // Create a texture from the base64 string
+      const texture = new THREE.TextureLoader().load(base64Img);
+
+      // Option 1: If you want to use it as the scene's background:
+      sceneApi.scene.background = texture;
+
+      // Option 2: If you want to apply it to a mesh:
+      // const geometry = new THREE.PlaneGeometry(500, 500); // adjust size as needed
+      // const material = new THREE.MeshBasicMaterial({ map: texture });
+      // const mesh = new THREE.Mesh(geometry, material);
+      // sceneApi.scene.add(mesh);
+
+
+      // sceneApi.addRoom('preset');
       setIsGenerated(true);
-    }, 2000);
+
+    }catch(e: any){
+      console.log(e);
+    }finally{
+      setIsLoading(false);
+    }
   };
   
   const resetView = () => {

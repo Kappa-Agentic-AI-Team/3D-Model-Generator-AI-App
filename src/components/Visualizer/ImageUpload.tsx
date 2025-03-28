@@ -3,15 +3,19 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/shared/Button";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { TextInput } from "./TextInput";
 
 interface ImageUploadProps {
-  onUpload: (file: File) => void;
+  onUpload: (file: File, prompt: string) => void;
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload }) => {
   const [image, setImage] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [prompt, setPrompt] = useState<string | undefined>();
+  const [imageFile, setImageFile] = useState<File | undefined>();
+  
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -25,12 +29,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload }) => {
       alert('Please select an image file');
       return;
     }
-
+    setImageFile(file);
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
         setImage(e.target.result as string);
-        onUpload(file);
       }
     };
     reader.readAsDataURL(file);
@@ -120,6 +123,14 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload }) => {
           </p>
         </div>
       )}
+      <div className="my-3"></div>
+      <TextInput onSubmit={(text)=>{
+        setPrompt(text);
+        if(imageFile){
+          onUpload(imageFile, text);
+        }
+      }} />
+                    
 
       <input
         type="file"
@@ -129,13 +140,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onUpload }) => {
         className="hidden"
       />
 
-      {image && (
+      {/* {image && (
         <Button 
           className="w-full mt-4 bg-kappa-600 hover:bg-kappa-700 transition-colors"
         >
           Generate from Image
         </Button>
-      )}
+      )} */}
     </div>
   );
 };
