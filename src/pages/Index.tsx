@@ -12,15 +12,15 @@ import { useState } from "react";
 const Index = () => {
   const [prompt, setPrompt] = useState<string | undefined>();
   const [imageFile, setImageFile] = useState<File | undefined>();
-
+  
   const handleTextSubmit = (text: string) => {
     setPrompt(text);
     setImageFile(undefined);
   };
 
-  const handleImageUpload = (file: File) => {
+  const handleImageUpload = (file: File, text: string, ) => {
     setImageFile(file);
-    setPrompt(undefined);
+    setPrompt(text);
   };
 
   return (
@@ -52,6 +52,7 @@ const Index = () => {
                   </TabsContent>
                   <TabsContent value="image">
                     <ImageUpload onUpload={handleImageUpload} />
+                    
                   </TabsContent>
                 </Tabs>
               </div>
